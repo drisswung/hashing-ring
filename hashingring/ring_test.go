@@ -4,6 +4,8 @@ import (
 	"testing"
 	"errors"
 	"strconv"
+	"fmt"
+	"sync"
 )
 
 func TestNodes(t *testing.T) {
@@ -29,7 +31,7 @@ func TestNodes(t *testing.T) {
 	}
 
 	ring.AddNode(&intNode{
-		hash:  667,
+		hash:  100,
 		store: make(map[intKey]interface{}),
 	})
 	notHit := 0
@@ -38,8 +40,9 @@ func TestNodes(t *testing.T) {
 			notHit++
 		}
 	}
-	if notHit != 1 {
-		t.Error("not hit is not 1")
+	fmt.Println(notHit)
+	if notHit != 100 {
+		t.Error("not hit is not 100")
 	}
 }
 
@@ -52,10 +55,12 @@ func (i intKey) Hash() uint32 {
 type intNode struct {
 	hash  uint32
 	store map[intKey]interface{}
+	sync.RWMutex
 }
 
 func (s *intNode) Get(key HashAble) (interface{}, bool) {
-
+	s.RLock()
+	defer s.RUnlock()
 	v, ok := key.(intKey)
 	if !ok {
 		return nil, false
@@ -66,7 +71,8 @@ func (s *intNode) Get(key HashAble) (interface{}, bool) {
 }
 
 func (s *intNode) Put(key HashAble, data interface{}) error {
-
+	s.Lock()
+	defer s.Unlock()
 	v, ok := key.(intKey)
 	if !ok {
 		return errors.New("wrong type")

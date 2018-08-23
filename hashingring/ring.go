@@ -40,6 +40,8 @@ func (r *Ring) AddNode(n Node) {
 }
 
 func (r *Ring) Get(key HashAble) (interface{}, bool) {
+	r.RLock()
+	r.RUnlock()
 	hash := key.Hash()
 	i := sort.Search(r.nodes.Len(), func(i int) bool {
 		return r.nodes[i].Hash() >= hash
@@ -51,6 +53,8 @@ func (r *Ring) Get(key HashAble) (interface{}, bool) {
 }
 
 func (r *Ring) Add(key HashAble, data interface{}) error {
+	r.RLock()
+	r.RUnlock()
 	hash := key.Hash()
 	i := sort.Search(r.nodes.Len(), func(i int) bool {
 		return r.nodes[i].Hash() >= hash
